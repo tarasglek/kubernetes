@@ -18,11 +18,7 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-DEBUG="${DEBUG:-false}"
-
-if [ "${DEBUG}" == "true" ]; then
-	set -x
-fi
+set -x
 
 cert_ip=$1
 extra_sans=${2:-}

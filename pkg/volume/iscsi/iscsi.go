@@ -142,6 +142,7 @@ func (plugin *iscsiPlugin) newUnmounterInternal(volName string, podUID types.UID
 }
 
 func (plugin *iscsiPlugin) execCommand(command string, args []string) ([]byte, error) {
+	glog.Warningf("execCommand: %s %v", command, args)
 	cmd := plugin.exe.Command(command, args...)
 	return cmd.CombinedOutput()
 }

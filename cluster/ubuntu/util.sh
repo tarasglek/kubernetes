@@ -490,11 +490,11 @@ function provision-master() {
       cp ~/kube/init_scripts/* /etc/init.d/
 
       groupadd -f -r kube-cert
-      ${PROXY_SETTING} DEBUG='${DEBUG}' ~/kube/make-ca-cert.sh \"${MASTER_IP}\" \"${EXTRA_SANS}\"
+      ${PROXY_SETTING} DEBUG='true' ~/kube/make-ca-cert.sh \"${MASTER_IP}\" \"${EXTRA_SANS}\"
       mkdir -p /opt/bin/
       cp ~/kube/master/* /opt/bin/
       service etcd start
-      if ${NEED_RECONFIG_DOCKER}; then FLANNEL_NET=\"${FLANNEL_NET}\" KUBE_CONFIG_FILE=\"${KUBE_CONFIG_FILE}\" DOCKER_OPTS=\"${DOCKER_OPTS}\" DEBUG=\"$DEBUG\" ~/kube/reconfDocker.sh a; fi
+      if ${NEED_RECONFIG_DOCKER}; then FLANNEL_NET=\"${FLANNEL_NET}\" KUBE_CONFIG_FILE=\"~/kube/config-default.sh\" DOCKER_OPTS=\"${DOCKER_OPTS}\" DEBUG=\"$DEBUG\" ~/kube/reconfDocker.sh a; fi
       '" || {
       echo "Deploying master on machine ${MASTER_IP} failed"
       exit 1
@@ -575,7 +575,7 @@ function provision-node() {
       mkdir -p /opt/bin/
       cp ~/kube/minion/* /opt/bin
       ${SERVICE_STARTS}
-      if ${NEED_RECONFIG_DOCKER}; then KUBE_CONFIG_FILE=\"${KUBE_CONFIG_FILE}\" DOCKER_OPTS=\"${DOCKER_OPTS}\" DEBUG=\"$DEBUG\" ~/kube/reconfDocker.sh i; fi
+      if ${NEED_RECONFIG_DOCKER}; then KUBE_CONFIG_FILE=\"~/kube/config-default.sh\" DOCKER_OPTS=\"${DOCKER_OPTS}\" DEBUG=\"$DEBUG\" ~/kube/reconfDocker.sh i; fi
       '" || {
       echo "Deploying node on machine ${1#*@} failed"
       exit 1
@@ -667,10 +667,10 @@ function provision-masterandnode() {
       '${MASTER_IP}' \
       '${MASTER_IP}' \
       '${KUBE_PROXY_EXTRA_OPTS}'
-    create-flanneld-opts '127.0.0.1' '${MASTER_IP}'
+    create-flanneld-opts '${MASTER_IP}' '127.0.0.1'
 
     FLANNEL_BACKEND='${FLANNEL_BACKEND}' FLANNEL_OTHER_NET_CONFIG='${FLANNEL_OTHER_NET_CONFIG}' sudo -E -p '[sudo] password to start master: ' -- /bin/bash -ce '
-      ${BASH_DEBUG_FLAGS}
+      set -x
       cp ~/kube/default/* /etc/default/
       cp ~/kube/init_conf/* /etc/init/
       cp ~/kube/init_scripts/* /etc/init.d/
@@ -678,8 +678,8 @@ function provision-masterandnode() {
       groupadd -f -r kube-cert
       ${PROXY_SETTING} DEBUG='${DEBUG}' ~/kube/make-ca-cert.sh \"${MASTER_IP}\" \"${EXTRA_SANS}\"
       mkdir -p /opt/bin/
-      cp ~/kube/master/* /opt/bin/
-      cp ~/kube/minion/* /opt/bin/
+      cp -v ~/kube/master/* /opt/bin/
+      cp -v ~/kube/minion/* /opt/bin/
 
       service etcd start
       if ${NEED_RECONFIG_DOCKER}; then FLANNEL_NET=\"${FLANNEL_NET}\" KUBE_CONFIG_FILE=\"${KUBE_CONFIG_FILE}\" DOCKER_OPTS=\"${DOCKER_OPTS}\" DEBUG=\"$DEBUG\" ~/kube/reconfDocker.sh ai; fi

@@ -18,7 +18,7 @@
 # Run as root only
 
 # author @resouer @WIZARD-CXY
-set -e
+set -xe
 
 function cleanup {
   # cleanup work
